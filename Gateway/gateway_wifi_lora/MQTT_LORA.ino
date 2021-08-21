@@ -32,8 +32,8 @@ bool telegram = false;
 String incoming = "";
 
 TaskHandle_t Task1;
-const char* ssid     = "CLAROFIBRA1"; //Nombre y contraseña del WIFI a utilizar
-const char* password = "JADE120203";
+const char* ssid     = "Fibertel WiFi419 2.4GHz"; //Nombre y contraseña del WIFI a utilizar
+const char* password = "timo39327271";
 
 const char *mqtt_server = "gatewaymultip.ml"; //Dominio
 const int mqtt_port = 1883; //Puerto designado por el Broker para comunicacion TCP
@@ -190,8 +190,14 @@ void updateSerial()
     delay(5000);
     for(int i=0;i<255;i++){
       var[i] = char(mySerial.read());//Forward what Software Serial received to Serial Port
-      Serial.print(var[i]);
-    }
+      if (var[i] != '/'){
+        Serial.print(var[i]);
+      }
+      else {
+        var[i] = '\0';
+        i = 255;
+        }
+      }
   }
 }
 
@@ -279,7 +285,7 @@ void codeForTask1(void *parameter)
 {
   for (;;)
   { 
-    Serial.println("holaaa");
+    //Serial.println("holaaa");
     delay(10000);
     if (!client.connected() && wifi_on == 0) {
       reconnect(); //Llamada a la funcion, en el caso que se caiga la conexion MQTT con el Broker
