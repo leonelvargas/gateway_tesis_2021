@@ -88,6 +88,7 @@ def gsmtoesp_th():
         gsmtoesp()
 
 def esptogsm():
+        approve_tosend = '' 
         mystr = ''
         time.sleep(5)
         #print('Ingreso al if')
@@ -116,9 +117,11 @@ def esptogsm():
                 splitstr = mystr[1].split('&')
                 ntosend = splitstr[0]
                 dtosend = splitstr[1]
-                mtosend = splitstr[2]
+                mtosend = splitstr[2]                
                 print('Contenido: ' + mtosend + ' El remitente es ' + ntosend + ' y el mensaje fue enviado: ' + dtosend)
-                sendSms(ntosend, dtosend, mtosend)
+                if (approve_tosend != mtosend):
+                    approve_tosend = mtosend
+                    sendSms(ntosend, dtosend, mtosend)
                 mystr = ''
             if '/' in mystr:
                 print('Mensaje recibido desde otra esp32: ', mystr)
@@ -245,4 +248,5 @@ while(True):
     
     
     
+
 
