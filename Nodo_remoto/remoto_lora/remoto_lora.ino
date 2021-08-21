@@ -12,9 +12,9 @@
 #include <LoRa.h>
 #include <HardwareSerial.h>
 HardwareSerial mySerial(2);
-const int csPin = 18;          // LoRa radio chip select
-const int resetPin = 14;       // LoRa radio reset
-const int irqPin = 35;         // change for your board; must be a hardware interrupt pin
+#define ss 5
+#define rst 14
+#define dio0 2
 
 String outgoing;              // outgoing message
 
@@ -24,7 +24,9 @@ byte destination = 0xFF;      // destination to send to
 long lastSendTime = 0;        // last send time
 int interval = 2000;          // interval between sends
 char var[255];
-//String incoming = "";
+String incoming = "";
+volatile bool received = false; // Flag set by callback to perform read process in main loop
+volatile int incomingPacketSize;
 char msg[255];
 
 
@@ -39,13 +41,14 @@ void setup() {
   delay(3000);
 
   // override the default CS, reset, and IRQ pins (optional)
-  LoRa.setPins(csPin, resetPin, irqPin);// set CS, reset, IRQ pin
-
+  LoRa.setPins(ss, rst, dio0);
+    
   if (!LoRa.begin(915E6)) {             // initialize ratio at 915 MHz
     Serial.println("LoRa init failed. Check your connections.");
     while (true);                       // if failed, do nothing
   }
-
+  
+  LoRa.onReceive(onReceive);
   Serial.println("LoRa init succeeded.");
 }
 
@@ -53,7 +56,6 @@ void loop() {
   
   if (millis() - lastSendTime > interval) {
     String message(var);
-    //sendMessage("3517549970&9-5-2021&hola pa, te falta mucho");
     sendMessage(message);
     Serial.println("Sending " + message);
     lastSendTime = millis();            // timestamp the message
@@ -61,8 +63,12 @@ void loop() {
   }
 
   // parse for a packet, and call onReceive with the result:
-  onReceive(LoRa.parsePacket());
-
+  LoRa.receive();
+  delay (5000);
+  if(received){
+   readMessage();
+  }
+  received = false;
   //updateSerial();
   //delay(5000);
   //Serial.print("ACA TENDRIA QUE ESTAR INCOMING:");
@@ -85,45 +91,27 @@ void sendMessage(String outgoing) {
   msgCount++;                           // increment message ID
 }
 
-void onReceive(int packetSize) {
-  if (packetSize == 0) return;          // if there's no packet, return
+void readMessage() {
+  // received a packet
+  incoming = "";
+  Serial.print("Received packet '");
 
-  // read packet header bytes:
-  int recipient = LoRa.read();          // recipient address
-  byte sender = LoRa.read();            // sender address
-  byte incomingMsgId = LoRa.read();     // incoming msg ID
-  byte incomingLength = LoRa.read();    // incoming msg length
-
-  String incoming = "";
-
-  while (LoRa.available()) {
+  // read packet
+  for (int i = 0; i < incomingPacketSize; i++) {
     incoming += (char)LoRa.read();
   }
-  //updateSerial(incoming);
-//  if (incomingLength != incoming.length()) {   // check length for error
-  //  Serial.println("error: message length does not match length");
-   // return;                             // skip rest of function
-  //}
-
-  // if the recipient isn't this device or broadcast,
-  if (recipient != localAddress && recipient != 0xFF) {
-    Serial.println("This message is not for me.");
-    return;                             // skip rest of function
-  }
-
-  // if message is for this device, or broadcast, print details:
-  Serial.println("Received from: 0x" + String(sender, HEX));
-  Serial.println("Sent to: 0x" + String(recipient, HEX));
-  Serial.println("Message ID: " + String(incomingMsgId));
-  Serial.println("Message length: " + String(incomingLength));
-  Serial.println("Message: " + incoming);
-  Serial.println("RSSI: " + String(LoRa.packetRssi()));
-  Serial.println("Snr: " + String(LoRa.packetSnr()));
-  Serial.println();
-  delay(5000);
+  Serial.print(incoming);
+  // print RSSI of packet
+  Serial.print("' with RSSI ");
+  Serial.println(LoRa.packetRssi());
   incoming.toCharArray(msg,255);
   mySerial.write(msg);
   Serial.println("Mensaje enviado a NODO GSM");
+}
+
+void onReceive(int packetSize) {
+  received = true;
+  incomingPacketSize = packetSize;
 }
 
 void updateSerial()
@@ -138,7 +126,13 @@ void updateSerial()
     delay(5000);
     for(int i=0;i<255;i++){
       var[i] = char(mySerial.read());//Forward what Software Serial received to Serial Port
-      Serial.print(var[i]);
-    }
+      if (var[i] != '/'){
+        Serial.print(var[i]);
+      }
+      else {
+        var[i] = '\0';
+        i = 255;
+        }
+      }
   }
 }
