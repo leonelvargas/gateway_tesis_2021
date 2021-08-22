@@ -155,7 +155,6 @@ void readMessage() {
   int del[2];
   // read packet
   for (int i = 0; i < incomingPacketSize; i++) {
-  
     incoming += (char)LoRa.read();
   }
   Serial.print(incoming);
@@ -166,15 +165,15 @@ void readMessage() {
   //mySerial.write(msg);  
 
   for(j = 0; j < i; j++){
-      if(incoming[j] == '^') {
-          del[k] = j;
-          k++;
+    if(incoming[j] == '^') {
+      del[k] = j;
+      k++;
       } 
   }
   j = 0;
   for(i = del[0] + 1; i < del[1]; i++){
-      mes[j] = incoming[i];
-      j++;
+    mes[j] = incoming[i];
+    j++;
   }
   // print RSSI of packet
   Serial.print("' with RSSI ");
