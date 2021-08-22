@@ -170,30 +170,25 @@ void onReceive(int packetSize) {
 
 void updateSerial()
 {
-  int i=0;
-  int j=0;
-  int k=0;
-  int del[2];
   //Serial.print("ACA TENDRIA QUE ESTAR INCOMING:");
   //Serial.print("enviando al nodo GSM:");
   //mySerial.write("3517549970&9-5-2021&asdqwerty");//Forward what Serial received to Software Serial Port
   //mySerial.write(msg);  
 
-while(mySerial.available()){
-    var[i] = mySerial.read();
-    i++;
-}
-for(j = 0; j < i; j++){
-    if(var[j] == '^') {
-        del[k] = j;
-        k++;
-    }
-}
-j = 0;
-for(i = del[0] + 1; i < del[1]; i++){
-    mes[j] = var[i];
-    j++;
-}
+  while(mySerial.available())
+  {
+    delay(5000);
+    for(int i=0;i<255;i++){
+      var[i] = char(mySerial.read());//Forward what Software Serial received to Serial Port
+      if (var[i] != '^'){
+        Serial.print(var[i]);
+      }
+      else {
+        var[i] = '\0';
+        i = 255;
+        }
+      }
+  }
 }
 
 //*****************************
