@@ -28,6 +28,7 @@ long lastSendTime = 0;        // last send time
 int interval = 2000;          // interval between sends
 int rotation = 0;
 char var[255];
+char mes[255];
 bool telegram = false;
 String incoming = "";
 volatile bool received = false; // Flag set by callback to perform read process in main loop
