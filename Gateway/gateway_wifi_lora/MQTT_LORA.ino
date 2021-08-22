@@ -180,13 +180,7 @@ void updateSerial()
     delay(5000);
     for(int i=0;i<255;i++){
       var[i] = char(mySerial.read());//Forward what Software Serial received to Serial Port
-      if (var[i] != '^'){
-        Serial.print(var[i]);
-      }
-      else {
-        var[i] = '\0';
-        i = 255;
-        }
+      Serial.print(var[i]);
       }
   }
 }
