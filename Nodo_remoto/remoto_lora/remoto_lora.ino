@@ -24,6 +24,7 @@ byte destination = 0xFF;      // destination to send to
 long lastSendTime = 0;        // last send time
 int interval = 2000;          // interval between sends
 char var[255];
+char mes[255];
 String incoming = "";
 volatile bool received = false; // Flag set by callback to perform read process in main loop
 volatile int incomingPacketSize;
@@ -95,17 +96,37 @@ void readMessage() {
   // received a packet
   incoming = "";
   Serial.print("Received packet '");
-
+  int i=0;
+  int j=0;
+  int k=0;
+  int del[2];
   // read packet
   for (int i = 0; i < incomingPacketSize; i++) {
     incoming += (char)LoRa.read();
   }
   Serial.print(incoming);
+    
+  //Serial.print("ACA TENDRIA QUE ESTAR INCOMING:");
+  //Serial.print("enviando al nodo GSM:");
+  //mySerial.write("3517549970&9-5-2021&asdqwerty");//Forward what Serial received to Software Serial Port
+  //mySerial.write(msg);  
+
+for(j = 0; j < i; j++){
+    if(incoming[j] == '^') {
+        del[k] = j;
+        k++;
+    }
+}
+j = 0;
+for(i = del[0] + 1; i < del[1]; i++){
+    mes[j] = incoming[i];
+    j++;
+}
   // print RSSI of packet
   Serial.print("' with RSSI ");
   Serial.println(LoRa.packetRssi());
-  incoming.toCharArray(msg,255);
-  mySerial.write(msg);
+  //incoming.toCharArray(msg,255);
+  mySerial.write(mes);
   Serial.println("Mensaje enviado a NODO GSM");
 }
 
