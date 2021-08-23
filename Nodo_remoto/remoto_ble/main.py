@@ -47,9 +47,9 @@ def esptoble():
                 print('esta es mystr nueva: ')
                 print(mystr)
                 splitstr = mystr[1].split('/')
-                ntosend = splitstr[0]
+                ntosend = splitstr[1]
                 dtosend = "nada"
-                mtosend = splitstr[1]
+                mtosend = splitstr[2]
                 print('Contenido: ' + mtosend + ' y el remitente es ' + ntosend)
                 mystr = ''
                 ble.write(mtosend, True)
