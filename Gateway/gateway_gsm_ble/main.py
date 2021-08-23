@@ -103,8 +103,8 @@ def esptogsm():
                 #print('esta es mystr nueva: ')
                 #print(mystr)
                 splitstr = mystr[1].split('|')
-                ntosend = splitstr[0]
-                mtosend = splitstr[1]
+                ntosend = splitstr[1]
+                mtosend = splitstr[2]
                 print('Contenido: ' + mtosend + ' El remitente es ' + ntosend)
                 mystr = ''
                 ble.write(mtosend, True)
