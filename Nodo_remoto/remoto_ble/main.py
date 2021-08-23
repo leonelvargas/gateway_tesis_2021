@@ -52,7 +52,8 @@ def esptoble():
                 mtosend = splitstr[2]
                 print('Contenido: ' + mtosend + ' y el remitente es ' + ntosend)
                 mystr = ''
-                ble.write(mtosend, True)
+                telegram_message = f"Contenido: {mtosend} y el remitente es: {ntosend}"
+                ble.write(telegram_message, True)
                 print("msj de Ble enviado")
 
 class BLE():
