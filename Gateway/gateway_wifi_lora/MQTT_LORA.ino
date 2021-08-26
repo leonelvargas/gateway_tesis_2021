@@ -1,4 +1,4 @@
-   /*
+ /*
   LoRa Duplex communication
   Sends a message every half second, and polls continually
   for new incoming messages. Implements a one-byte addressing scheme,
@@ -30,18 +30,20 @@ int rotation = 0;
 char var[255];
 bool telegram = false;
 String incoming = "";
+String telegramstring = "";
 volatile bool received = false; // Flag set by callback to perform read process in main loop
 volatile int incomingPacketSize;
 
 TaskHandle_t Task1;
-const char* ssid     = "CLAROFIBRA1"; //Nombre y contraseña del WIFI a utilizar
-const char* password = "JADE120203";
+const char* ssid     = "Fibertel WiFi419 2.4GHz"; //Nombre y contraseña del WIFI a utilizar
+const char* password = "timo39327271";
 
 const char *mqtt_server = "gatewaymultip.ml"; //Dominio
 const int mqtt_port = 1883; //Puerto designado por el Broker para comunicacion TCP
 const char *mqtt_user = "web_client_acom"; //usuario y contraseña valido de la base de datos para el ingreso
 const char *mqtt_pass = "123456789"; //Esto se debe modificar para cada dispositivo y tiene que estar en la base de datos admmin_basegaten
 int wifi_on = 0;
+int led = 26;
 
 WiFiClient espClient;
 PubSubClient client(espClient); //Se indica el tipo de comunicacion dispositivo a Broker
@@ -77,6 +79,9 @@ void setup() {
   LoRa.onReceive(onReceive);
   Serial.println("LoRa init succeeded.");
 
+  pinMode(led, OUTPUT);
+  digitalWrite(led, LOW);
+
   randomSeed(micros()); //semilla para la creacion de n° aleatorios
   if (setup_wifi()){
     wifi_on = 1; //inicializacion del WIFI
@@ -99,8 +104,8 @@ void loop() {
     //sendMessage("3517549970&9-5-2021&hola pa, te falta mucho");
     if (telegram){
       Serial.println(rotation);
-      sendMessage(incoming);
-      Serial.println("Sending " + incoming);
+      sendMessage(telegramstring);
+      Serial.println("Sending " + telegramstring);
       rotation++;
       }
     else {
@@ -204,6 +209,7 @@ int setup_wifi(){
     } 
     else{
       Serial.println("");
+      digitalWrite(led, HIGH);
       Serial.println("Conectado a red WiFi!");
       Serial.println("Dirección IP: "); //Se muestra la ip asignada al dispositivo por el router
       Serial.println(WiFi.localIP());
@@ -228,12 +234,12 @@ void callback(char* topic, byte* payload, unsigned int length){ //La funcion rec
   Serial.print(topic);            //mostrar una palabra tras otra
   Serial.println("");
   for (int i = 0; i < length; i++) { //Se obtiene el mensaje recibido (array de bytes)
-    incoming += (char)payload[i]; // y se pasa a string para manipulacion
+    telegramstring += (char)payload[i]; // y se pasa a string para manipulacion
   }
-  incoming.trim(); //Al transformar un array de bytes a string existen espacion en blancos al final de la palabra
-  Serial.println("Mensaje -> " + incoming); //suprimidos por dicha funcion
+  telegramstring.trim(); //Al transformar un array de bytes a string existen espacion en blancos al final de la palabra
+  Serial.println("Mensaje -> " + telegramstring); //suprimidos por dicha funcion
   telegram = true;
-  Serial.println("Sending " + incoming);
+  Serial.println("Sending " + telegramstring);
 
 }
 
