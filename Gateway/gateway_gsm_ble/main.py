@@ -7,6 +7,8 @@ uart = machine.UART(1, 9600)                         # init with given baudrate
 uart.init(9600, bits=8, parity=None, stop=1, tx = 19, rx = 18)
 gsm = machine.UART(2, 115200)
 gsm.init(115200, bits = 8, parity=None, stop=1)
+mtosend = ''
+oldmtosend = ''
 
 def updateGsm(toGsm):
     if(toGsm != ''):
@@ -45,7 +47,17 @@ def sendSms(ntosend, dtosend, mtosend):
         
 def shareSms(n, d, m):
     if((n != '') and (d != '') and (m != '')):
-        toEsp = n + "&" + d + "&" + m
+        toEsp = "GSM" + n + "GSM" + d + "GSM" + m + "GSM"
+        uart.write(toEsp)
+        print('Sending -> ')
+        print(toEsp)
+        n = ''
+        d = ''
+        m = ''
+
+def shareSmsBLE(m):
+    if(m != ''):
+        toEsp = m 
         uart.write(toEsp)
         print('Sending -> ')
         print(toEsp)
@@ -88,54 +100,45 @@ def gsmtoesp_th():
         gsmtoesp()
 
 def esptogsm():
-        approve_tosend = '' 
         mystr = ''
+        global mtosend
+        global oldmtosend
         time.sleep(5)
         #print('Ingreso al if')
         if(uart.any() > 0):
             while(uart.any() > 0):
                 mystr = mystr + str(uart.read())
             #print("ANTES DEL IF:")
-            print(mystr)
+            print(mystr) 
             if 'BLE' in mystr:
                 print('Mensaje recibido desde Bluetooth: ', mystr)
                 mystr = mystr.split("'")
                 #print('esta es mystr nueva: ')
                 #print(mystr)
-                splitstr = mystr[1].split('|')
+                splitstr = mystr[1].split('BLE')
                 ntosend = splitstr[0]
                 mtosend = splitstr[1]
                 print('Contenido: ' + mtosend + ' El remitente es ' + ntosend)
                 mystr = ''
                 ble.write(mtosend, True)
                 print("msj de Ble enviado")
-            if '&' in mystr:
+            if 'GSM' in mystr:
                 print('Mensaje recibido desde otra esp32: ', mystr)
                 mystr = mystr.split("'")
                 #print('esta es mystr nueva: ')
                 #print(mystr)
-                splitstr = mystr[1].split('&')
+                splitstr = mystr[1].split('GSM')
                 ntosend = splitstr[1]
                 dtosend = splitstr[2]
                 mtosend = splitstr[3]                
                 print('Contenido: ' + mtosend + ' El remitente es ' + ntosend + ' y el mensaje fue enviado: ' + dtosend)
-                if (approve_tosend != mtosend):
-                    approve_tosend = mtosend
+                if (oldmtosend != mtosend):
+                    oldmtosend = mtosend
                     sendSms(ntosend, dtosend, mtosend)
+                else:
+                    print("Mensaje de ble repetido, no se envia por GSM")
                 mystr = ''
-            if '/' in mystr:
-                print('Mensaje recibido desde otra esp32: ', mystr)
-                mystr = mystr.split("'")
-                #print('esta es mystr nueva: ')
-                #print(mystr)
-                splitstr = mystr[1].split('/')
-                ntosend = splitstr[1]
-                mtosend = splitstr[2]
-                dtosend = "nada"
-                print('Contenido: ' + mtosend + ' El remitente es ' + ntosend)
-                mystr = ''
-                sendSms(ntosend, dtosend, mtosend)
-                print("msj sms enviado, contestando al emisor de TELEGRAM")
+                              
         
 class BLE():
 
@@ -187,7 +190,7 @@ class BLE():
             buffer = self.ble.gatts_read(self.trx)
             message = buffer.decode('UTF-8').strip()
             print('Smartphone:', message)
-            shareSms('BLE', 'gateway', message)
+            shareSmsBLE(message)
         
             
     def register(self):
@@ -241,12 +244,6 @@ ble.write('123456789111315171921232527293133353796163656769717375777981838587899
 
 while(True):
     #print('waiting for message... ')
-    while(uart.any() > 0):
-        uart.read()
+#     while(uart.any() > 0):
+#         uart.read()
     esptogsm()
-    
-    
-    
-    
-
-
