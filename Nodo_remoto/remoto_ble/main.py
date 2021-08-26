@@ -2,7 +2,6 @@ import machine, time
 from machine import Pin, Timer
 from time import sleep_ms
 import ubluetooth
-from esp32 import raw_temperature
 
 uart = machine.UART(1, 9600)                         # init with given baudrate
 uart.init(9600, bits=8, parity=None, stop=1, tx = 19, rx = 18)
@@ -21,19 +20,19 @@ def esptoble():
                 mystr = mystr.split("'")
                 print('esta es mystr nueva: ')
                 print(mystr)
-                splitstr = mystr[1].split('|')
+                splitstr = mystr[1].split('BLE')
                 ntosend = splitstr[0]
                 mtosend = splitstr[1]
                 print('Contenido: ' + mtosend + ' El remitente es ' + ntosend)
                 mystr = ''
                 ble.write(mtosend, True)
                 print("msj de Ble enviado")
-            if '&' in mystr:
+            if 'GSM' in mystr:
                 print('Mensaje recibido desde Gateway: ', mystr)
                 mystr = mystr.split("'")
                 print('esta es mystr nueva: ')
                 print(mystr)
-                splitstr = mystr[1].split('&')
+                splitstr = mystr[1].split('GSM')
                 ntosend = splitstr[1]
                 dtosend = splitstr[2]
                 mtosend = splitstr[3]
@@ -41,18 +40,18 @@ def esptoble():
                 mystr = ''
                 ble.write(mtosend, True)
                 print("msj de Ble enviado")
-            if '/' in mystr:
+            if 'BOT' in mystr:
                 print('Mensaje recibido desde Telegram: ', mystr)
                 mystr = mystr.split("'")
                 print('esta es mystr nueva: ')
                 print(mystr)
-                splitstr = mystr[1].split('/')
+                splitstr = mystr[1].split('BOT')
                 ntosend = splitstr[1]
                 dtosend = "nada"
                 mtosend = splitstr[2]
                 print('Contenido: ' + mtosend + ' y el remitente es ' + ntosend)
                 mystr = ''
-                telegram_message = f"Contenido: {mtosend} y el remitente es: {ntosend}"
+                telegram_message = "Recibiste un msj desde Telegram del num:"+ ntosend + ". Cuyo contenido es:" + mtosend
                 ble.write(telegram_message, True)
                 print("msj de Ble enviado")
 
